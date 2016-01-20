@@ -2,6 +2,7 @@ package com.github.QVBA;
 
 import net.minecraftforge.common.MinecraftForge;
 
+import com.github.QVBA.Commands.RemoveItem;
 import com.github.QVBA.Commands.SaveItem;
 import com.github.QVBA.Commands.AmISkulled;
 import com.github.QVBA.Commands.SavedItems;
@@ -28,5 +29,6 @@ public class PvpSkull {
 		event.registerServerCommand(new SaveItem());
 		event.registerServerCommand(new AmISkulled());
 		event.registerServerCommand(new SavedItems());
+		event.registerServerCommand(new RemoveItem());
 	}
 }

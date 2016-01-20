@@ -5,9 +5,9 @@ import java.util.Iterator;
 
 import com.github.QVBA.Reference;
 import com.github.QVBA.Helpers.ChatHelper;
+import com.github.QVBA.Helpers.UtilityHelper;
 import com.github.QVBA.NBT.NBTHelper;
 import com.github.QVBA.NBT.PlayerEntityProperties;
-import com.github.QVBA.Proxies.CommonProxy;
 
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -33,15 +33,14 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
  * PlayerDropsEvent
  * PlayerRespawnEvent
  * EntityConstructingEvent
- * LivingDeathEvent
- * EntityJoinWorldEvent
+*  PlayerEvent.Clone
  * @author QVBA/Roxox1
  */
 public class PlayerEvents {
 	
 	@SubscribeEvent
 	public void onEvent(AttackEntityEvent event) {
-		if(event.entityPlayer.worldObj.isRemote) { //Return if this is clientside.
+		if(event.entityPlayer.worldObj.isRemote) {
 			return;
 		}
 		Entity a = event.target;
@@ -57,49 +56,31 @@ public class PlayerEvents {
 	}
 	@SubscribeEvent
 	public void onEvent(PlayerDropsEvent event) {
-		if(event.entityPlayer.worldObj.isRemote) { //Return if this is clientside.
+		if(event.entityPlayer.worldObj.isRemote) {
 			return;
 		}
 		EntityPlayer died = event.entityPlayer;
 		PlayerEntityProperties diedProps = PlayerEntityProperties.get(died);
 		if(!diedProps.isSkulled()) {
-			//Loop through the items in the players inventory and decide which ones to keep.
-			ArrayList<EntityItem> drops = new ArrayList<EntityItem>();
-			int i = 0;
-			for(EntityItem item : event.drops) {
-				ItemStack stack = item.getEntityItem();
-				if(stack != null && NBTHelper.isItemKeepOnDeath(stack)) {
-					if(diedProps.savedItemsContains(stack)) {
-						drops.add(item);
-						diedProps.setOwedItem(i, stack);
-						i++;
-					}else {
-						//We found an item that it marked to save, but is not the players. 
-						//This can happen in many ways, so we just handle it here and fix items being incorrectly saved.
-						NBTHelper.getModNbt(stack).setBoolean(NBTHelper.NBT_KEEPONDEATH, false);
-					}
-				}
-			}
 			
-			if(drops.size() <  1) return;  // Couldn't find any saved items in the players inventory.
-			
-			//Remove any items we found to keep from the items to be dropped on the floor.
+			//Remove any items we found to keep from the items to be dropped on the floor. Add the items we find to the list of items to refund the player.
 			Iterator dropsIterator = event.drops.iterator();
+			int i = 0;
 			while(dropsIterator.hasNext()) {
-				EntityItem next = (EntityItem) dropsIterator.next();
-				if(drops.contains(next)) {
+				ItemStack stack = ((EntityItem) dropsIterator.next()).getEntityItem();
+				if(stack != null && UtilityHelper.listContains(diedProps.getSavedItems(), stack) && NBTHelper.isItemKeepOnDeath(stack)) {
+					diedProps.setOwedItem(i, stack);
 					dropsIterator.remove();
+					i++;
 				}
 			}
-			
-			//Tell the PlayerRespawnEvent event handler that it needs to give the player their saved items back.
-			diedProps.setOwed(true);
+			diedProps.setOwed(i > 0);
 		}	
 	}
 	
 	@SubscribeEvent
 	public void onEvent(PlayerRespawnEvent event) {
-		if(event.player.worldObj.isRemote) { //Return if this is clientside.
+		if(event.player.worldObj.isRemote) {
 			return;
 		}
 		EntityPlayer player = event.player;
@@ -136,6 +117,7 @@ public class PlayerEvents {
 
 	@SubscribeEvent
 	public void onEvent(PlayerEvent.Clone event) {
+		//Update the players NBT tags when the player dies. Otherwise NBT is lost on death.
 		PlayerEntityProperties.get(event.entityPlayer).copy(PlayerEntityProperties.get(event.original));
 	}
 }
