@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.github.QVBA.EntityPlayerItemStorage;
-import com.github.QVBA.NBTHelper;
 import com.github.QVBA.Reference;
 import com.github.QVBA.SkulledPlayerManager;
+import com.github.QVBA.Helpers.ChatHelper;
+import com.github.QVBA.Helpers.NBTHelper;
 
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -35,16 +36,10 @@ public class PlayerEvents {
 		if(event.entityPlayer.worldObj.isRemote) { //Return if this is clientside.
 			return;
 		}
-		Entity a = event.target;
-		EntityPlayer attacker = event.entityPlayer;
-		if(a instanceof EntityPlayer) {
-			EntityPlayer attacked = (EntityPlayer) a;
-			if(!skulledManager.isPlayerSkulled(attacked)) {
-				skulledManager.skullPlayer(attacker);
-			}
-			System.out.println(attacker.getDisplayName() + " attacked " + attacked.getDisplayName());
-			for(EntityPlayer player : skulledManager.list()) {
-				System.out.println(player.getDisplayName() + " is skulled!");
+		Entity attacked = event.target;
+		if(attacked instanceof EntityPlayer) {
+			if(!skulledManager.isPlayerSkulled((EntityPlayer) attacked)) {
+				skulledManager.skullPlayer(event.entityPlayer);
 			}
 		}
 	}
@@ -56,21 +51,20 @@ public class PlayerEvents {
 		}
 		EntityPlayer died = event.entityPlayer;
 		if(!skulledManager.isPlayerSkulled(died)) {
-			int size = event.drops.size();
 			//If the player had 3 or less items, we don't need to bother figuring out which ones to keep, give him all of them.
-			if(size <= 3) {
-				event.drops.clear(); //First remove all of the items from the drops.
+			if(event.drops.size() <= 3) {
+				event.drops.clear();
 				return;
 			}
 			int i = 0;
 			ArrayList<EntityItem> drops = new ArrayList<EntityItem>();
 			for(EntityItem item : event.drops) {
 				ItemStack stack = item.getEntityItem();
-				if(i < 3 && stack != null && NBTHelper.getNbt(stack, Reference.MOD_ID) != null && NBTHelper.getNbt(stack, Reference.MOD_ID).hasKey("keepOnDeath") && NBTHelper.getNbt(stack, Reference.MOD_ID).getBoolean("keepOnDeath")) {
+				if(i < 3 && stack != null && NBTHelper.isItemKeepOnDeath(stack)) {
 					drops.add(item);
 					i++;
 				}else {
-					NBTHelper.getNbt(stack, Reference.MOD_ID).setBoolean("keepOnDeath", false);
+					NBTHelper.getModNbt(stack).setBoolean("keepOnDeath", false);
 				}
 			}
 			Iterator dropsIterator = event.drops.iterator();
@@ -83,7 +77,7 @@ public class PlayerEvents {
 			
 			skulledManager.addOwedPlayer(new EntityPlayerItemStorage(died, drops));
 			if(i >= 3) {
-				died.addChatMessage(new ChatComponentText("[" + Reference.MOD_ID + "]" + " You had more than 3 items saved, ONLY 3 MAY BE SAVED!"));
+				ChatHelper.sendChatMessage(died, "You had more than 3 items saved, ONLY 3 MAY BE SAVED!");
 			}
 		}	
 	}
@@ -99,11 +93,11 @@ public class PlayerEvents {
 		if(storage != null) {
 			for(EntityItem item : storage.itemsOwed) {
 				ItemStack stack = item.getEntityItem();
-				NBTHelper.getNbt(stack, Reference.MOD_ID).setBoolean("keepOnDeath", false);
+				NBTHelper.getModNbt(stack).setBoolean("keepOnDeath", false);
 				player.inventory.addItemStackToInventory(stack);
 			}
 			skulledManager.removeOwedPlayer(storage);
-			player.addChatMessage(new ChatComponentText("[" + Reference.MOD_NAME + "] Your items have been returned, and your items are no longer saved on death."));
+			ChatHelper.sendChatMessage(player, "Your items have been returned, and your items are no longer saved on death");
 		}
 	}
 

@@ -2,7 +2,7 @@ package com.github.QVBA;
 
 import net.minecraftforge.common.MinecraftForge;
 
-import com.github.QVBA.Commands.AddItem;
+import com.github.QVBA.Commands.SaveItem;
 import com.github.QVBA.Commands.AmISkulled;
 import com.github.QVBA.Events.PlayerEvents;
 
@@ -28,7 +28,7 @@ public class PvpSkull {
 	
 	@EventHandler
 	public void serverLoad(FMLServerStartingEvent event) {
-		event.registerServerCommand(new AddItem());
+		event.registerServerCommand(new SaveItem());
 		event.registerServerCommand(new AmISkulled(manager));
 	}
 }

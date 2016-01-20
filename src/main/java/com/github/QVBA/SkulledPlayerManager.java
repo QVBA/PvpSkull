@@ -15,28 +15,25 @@ public class SkulledPlayerManager {
 		owedPlayers = new ArrayList<EntityPlayerItemStorage>();
 	}
 	
+	/**
+	 * Skulls the target player.
+	 * Can also be used to refresh the skull duration.
+	 */
 	public void skullPlayer(EntityPlayer player) {
-		if(!skulledPlayers.contains(player)) {
-			skulledPlayers.add(player);
-		}else {
-			System.out.println("Something tried to add an already skulled player to the skulled players list. The player has not been re-added.");
+		if(skulledPlayers.contains(player)) {
+			skulledPlayers.remove(player);
 		}
+		skulledPlayers.add(player);
 	}
 	
 	public void unSkullPlayer(EntityPlayer player) {
 		if(skulledPlayers.contains(player)) {
 			skulledPlayers.remove(player);
-		}else {
-			System.out.println("Something tried to remove a non-skulled player from the skulled players list.");
 		}
 	}
 	
 	public boolean isPlayerSkulled(EntityPlayer player) {
 		return skulledPlayers.contains(player);
-	}
-	
-	public ArrayList<EntityPlayer> list() {
-		return skulledPlayers;
 	}
 	
 	public void addOwedPlayer(EntityPlayerItemStorage playeritems) {
