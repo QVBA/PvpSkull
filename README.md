@@ -16,6 +16,6 @@ TODO:
   
   Add hover-over text for saved items in the player inventory.
   
-  Add killstreak tracking for players.
+  Add killstreak tracking for players. (Done, Commit https://github.com/QVBA/PvpSkull/commit/f5a3e30c9ef2d8f814ff3cb084555837b3a485b0)
   
   Add reputation system for killing skulled/unskulled players. (i.e, Protector for people who kill skulled players, Villan for people who kill unskulled players)
