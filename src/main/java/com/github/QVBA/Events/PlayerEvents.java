@@ -120,4 +120,13 @@ public class PlayerEvents {
 		//Update the players NBT tags when the player dies. Otherwise NBT is lost on death.
 		PlayerEntityProperties.get(event.entityPlayer).copy(PlayerEntityProperties.get(event.original));
 	}
+	
+	@SubscribeEvent
+	public void onEvent(LivingDeathEvent event) {
+		//Tracks K/D. Only applies to PvP. 
+		if(!(event.entity instanceof EntityPlayer)) return;
+		if(!(event.source.getEntity() instanceof EntityPlayer)) return;
+		PlayerEntityProperties.get((EntityPlayer) event.source.getEntity()).addKill();
+		PlayerEntityProperties.get((EntityPlayer) event.entityLiving).addDeath();
+	}
 }

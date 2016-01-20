@@ -6,6 +6,7 @@ import com.github.QVBA.Commands.RemoveItem;
 import com.github.QVBA.Commands.SaveItem;
 import com.github.QVBA.Commands.AmISkulled;
 import com.github.QVBA.Commands.SavedItems;
+import com.github.QVBA.Commands.getKDR;
 import com.github.QVBA.Events.PlayerEvents;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -30,5 +31,6 @@ public class PvpSkull {
 		event.registerServerCommand(new AmISkulled());
 		event.registerServerCommand(new SavedItems());
 		event.registerServerCommand(new RemoveItem());
+		event.registerServerCommand(new getKDR());
 	}
 }

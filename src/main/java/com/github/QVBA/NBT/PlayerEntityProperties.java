@@ -31,12 +31,16 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 	private final String KEY_IS_OWED = "isOwed";
 	private final String KEY_SAVED_ITEMS = "savedItems";
 	private final String KEY_OWED_ITEMS = "owedItems";
+	private final String KEY_TOTAL_KILLS = "totalKills";
+	private final String KEY_TOTAL_DEATHS = "totalDeaths";
 	
 	//Values
 	private boolean isSkulled;
 	private boolean isOwed;
 	private ItemStack[] savedItems;
 	private ItemStack[] owedItems; //We don't want to give players back items on death that they didn't have in their inventory.
+	private int totalKills;
+	private int totalDeaths;
 	
 	public PlayerEntityProperties(EntityPlayer player) {
 		this.player = player;
@@ -44,6 +48,8 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 		this.isOwed = false;
 		this.savedItems = new ItemStack[3];
 		this.owedItems = new ItemStack[3];
+		this.totalKills = 0;
+		this.totalDeaths = 0;
 	}
 	
 	public static final void register(EntityPlayer player) {
@@ -60,7 +66,8 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 		NBTTagCompound properties = new NBTTagCompound();
 		properties.setBoolean(KEY_IS_SKULLED, this.isSkulled);
 		properties.setBoolean(KEY_IS_OWED, this.isOwed);
-		
+		properties.setInteger(KEY_TOTAL_KILLS, this.totalKills);
+		properties.setInteger(KEY_TOTAL_DEATHS, this.totalDeaths);
 		NBTTagList list = new NBTTagList();
 		for(ItemStack stack : savedItems) {
 			if(stack != null) {
@@ -84,6 +91,8 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 		NBTTagCompound properties = (NBTTagCompound) compound.getTag(EXT_PROP_NAME);
 		this.isSkulled = properties.getBoolean(KEY_IS_SKULLED);
 		this.isOwed = properties.getBoolean(KEY_IS_OWED);
+		this.totalKills = properties.getInteger(KEY_TOTAL_KILLS);
+		this.totalDeaths = properties.getInteger(KEY_TOTAL_DEATHS);
 		NBTTagList list = properties.getTagList(KEY_SAVED_ITEMS, Constants.NBT.TAG_LIST);
 		for(int i = 0; i < list.tagCount(); i++) {
 			this.savedItems[i] = ItemStack.loadItemStackFromNBT(list.getCompoundTagAt(i));
@@ -170,6 +179,31 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 		this.isOwed = p.isOwed;
 		this.owedItems = p.owedItems;
 		this.savedItems = p.savedItems;
-		
+		this.totalDeaths = p.totalDeaths;
+		this.totalKills = p.totalKills;
+	}
+	
+	public int getKills() {
+		return this.totalKills;
+	}
+	
+	public void addKill() {
+		this.totalKills++;
+	}
+	
+	public void setKills(int amount) {
+		this.totalKills = amount;
+	}
+
+	public void addDeath() {
+		this.totalDeaths++;
+	}
+	
+	public int getDeaths() {
+		return this.totalDeaths;
+	}
+	
+	public void setDeaths(int amount) {
+		this.totalDeaths = amount;
 	}
 }
