@@ -3,7 +3,7 @@ package com.github.QVBA.Commands;
 import java.util.List;
 
 import com.github.QVBA.Reference;
-import com.github.QVBA.SkulledPlayerManager;
+import com.github.QVBA.PlayerManager;
 import com.github.QVBA.Helpers.ChatHelper;
 
 import net.minecraft.command.ICommand;
@@ -13,9 +13,9 @@ import net.minecraft.util.ChatComponentText;
 
 public class AmISkulled extends Command{
 	
-	private SkulledPlayerManager manager;
+	private PlayerManager manager;
 	
-	public AmISkulled(SkulledPlayerManager manager) {
+	public AmISkulled(PlayerManager manager) {
 		this.manager = manager;
 	}
 

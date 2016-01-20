@@ -12,7 +12,7 @@ import net.minecraftforge.common.util.Constants.NBT;
 public class NBTHelper {
 	
 	 public static final int TAG_COMPOUND = 10;
-	 public static final String NBT_KEEPONDEATH = "keepOnDeath";
+	 public static final String NBT_KEEPONDEATH = "keepOnDeath"; //Used to prevent spelling mistakes.
 	
     /**
      * <p>Get the NBTTagCompound associated with the given ItemStack and initializes it if necessary.</p>

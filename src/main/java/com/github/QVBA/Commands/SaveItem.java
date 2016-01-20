@@ -50,7 +50,7 @@ public class SaveItem extends Command{
 		}
 		
 		//Requires additional work.
-		NBTHelper.getModNbt(heldItem).setBoolean("keepOnDeath", true);
+		NBTHelper.getModNbt(heldItem).setBoolean(NBTHelper.NBT_KEEPONDEATH, true);
 		ChatHelper.sendChatMessage(player, heldItem.getDisplayName() + " has been saved!");
 	}
 }

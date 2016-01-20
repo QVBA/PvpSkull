@@ -5,7 +5,7 @@ import java.util.Iterator;
 
 import com.github.QVBA.EntityPlayerItemStorage;
 import com.github.QVBA.Reference;
-import com.github.QVBA.SkulledPlayerManager;
+import com.github.QVBA.PlayerManager;
 import com.github.QVBA.Helpers.ChatHelper;
 import com.github.QVBA.Helpers.NBTHelper;
 
@@ -25,10 +25,10 @@ import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 
 public class PlayerEvents {
 	
-	private SkulledPlayerManager skulledManager;
+	private PlayerManager manager;
 	
-	public PlayerEvents(SkulledPlayerManager manager) {
-		this.skulledManager = manager;
+	public PlayerEvents(PlayerManager manager) {
+		this.manager = manager;
 	}
 	
 	@SubscribeEvent
@@ -37,36 +37,40 @@ public class PlayerEvents {
 			return;
 		}
 		Entity attacked = event.target;
+		EntityPlayer attacker = event.entityPlayer;
 		if(attacked instanceof EntityPlayer) {
-			if(!skulledManager.isPlayerSkulled((EntityPlayer) attacked)) {
-				skulledManager.skullPlayer(event.entityPlayer);
+			if(!manager.isPlayerSkulled((EntityPlayer) attacked)) {
+				manager.skullPlayer(attacker);
 			}
 		}
 	}
-	
 	@SubscribeEvent
 	public void onEvent(PlayerDropsEvent event) {
 		if(event.entityPlayer.worldObj.isRemote) { //Return if this is clientside.
 			return;
 		}
 		EntityPlayer died = event.entityPlayer;
-		if(!skulledManager.isPlayerSkulled(died)) {
-			//If the player had 3 or less items, we don't need to bother figuring out which ones to keep, give him all of them.
-			if(event.drops.size() <= 3) {
-				event.drops.clear();
-				return;
-			}
-			int i = 0;
+		if(!manager.isPlayerSkulled(died)) {
+			if(manager.getUnSkulledPlayer(died) == null) return; // The player doesn't have any owed items stored. 
+			
+			//Loop through the items in the players inventory and decide which ones to keep.
 			ArrayList<EntityItem> drops = new ArrayList<EntityItem>();
 			for(EntityItem item : event.drops) {
 				ItemStack stack = item.getEntityItem();
-				if(i < 3 && stack != null && NBTHelper.isItemKeepOnDeath(stack)) {
-					drops.add(item);
-					i++;
-				}else {
-					NBTHelper.getModNbt(stack).setBoolean("keepOnDeath", false);
+				if(stack != null && NBTHelper.isItemKeepOnDeath(stack)) {
+					if(manager.getUnSkulledPlayer(died).getItems().contains(stack)) {
+						drops.add(item);
+					}else {
+						//We found an item that it marked to save, but is not the players. 
+						//This can happen in many ways, so we just handle it here and fix items being incorrectly saved.
+						NBTHelper.getModNbt(stack).setBoolean(NBTHelper.NBT_KEEPONDEATH, false);
+					}
 				}
 			}
+			
+			if(drops.size() <  1) return;  // Couldn't find any saved items in the players inventory.
+			
+			//Remove any items we found to keep from the items to be dropped on the floor.
 			Iterator dropsIterator = event.drops.iterator();
 			while(dropsIterator.hasNext()) {
 				EntityItem next = (EntityItem) dropsIterator.next();
@@ -75,10 +79,8 @@ public class PlayerEvents {
 				}
 			}
 			
-			skulledManager.addOwedPlayer(new EntityPlayerItemStorage(died, drops));
-			if(i >= 3) {
-				ChatHelper.sendChatMessage(died, "You had more than 3 items saved, ONLY 3 MAY BE SAVED!");
-			}
+			//Tell the PlayerRespawnEvent event handler that it needs to give the player their saved items back.
+			manager.getUnSkulledPlayer(died).setOwedItems(true);
 		}	
 	}
 	
@@ -89,15 +91,16 @@ public class PlayerEvents {
 		}
 		System.out.println("FIRED!");
 		EntityPlayer player = event.player;
-		EntityPlayerItemStorage storage = skulledManager.getOwedPlayer(player);
+		EntityPlayerItemStorage storage = manager.getUnSkulledPlayer(player);
 		if(storage != null) {
-			for(EntityItem item : storage.itemsOwed) {
-				ItemStack stack = item.getEntityItem();
-				NBTHelper.getModNbt(stack).setBoolean("keepOnDeath", false);
+			for(ItemStack stack : storage.getItems()) {
+				NBTHelper.getModNbt(stack).setBoolean(NBTHelper.NBT_KEEPONDEATH, false);
 				player.inventory.addItemStackToInventory(stack);
 			}
-			skulledManager.removeOwedPlayer(storage);
-			ChatHelper.sendChatMessage(player, "Your items have been returned, and your items are no longer saved on death");
+			
+			manager.getUnSkulledPlayer(player).setOwedItems(false);
+			manager.getUnSkulledPlayer(player).clearItems();
+			ChatHelper.sendChatMessage(player, "Your items have been returned, and your saved items list has been cleared");
 		}
 	}
 

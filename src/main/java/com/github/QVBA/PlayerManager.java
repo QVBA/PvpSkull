@@ -5,12 +5,13 @@ import java.util.ArrayList;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 
-public class SkulledPlayerManager {
+public class PlayerManager {
 	
 	private ArrayList<EntityPlayer> skulledPlayers;
+	private ArrayList<EntityPlayerItemStorage> unskulledPlayers;
 	private ArrayList<EntityPlayerItemStorage> owedPlayers;
 	
-	public SkulledPlayerManager() {
+	public PlayerManager() {
 		skulledPlayers = new ArrayList<EntityPlayer>();
 		owedPlayers = new ArrayList<EntityPlayerItemStorage>();
 	}
@@ -36,17 +37,17 @@ public class SkulledPlayerManager {
 		return skulledPlayers.contains(player);
 	}
 	
-	public void addOwedPlayer(EntityPlayerItemStorage playeritems) {
+	public void addUnSkulledPlayer(EntityPlayerItemStorage playeritems) {
 		owedPlayers.add(playeritems);
 	}
 	
-	public void removeOwedPlayer(EntityPlayerItemStorage playeritems) {
+	public void removeUnSkulledPlayer(EntityPlayerItemStorage playeritems) {
 		owedPlayers.remove(playeritems);
 	}
 	
-	public EntityPlayerItemStorage getOwedPlayer(EntityPlayer player) {
+	public EntityPlayerItemStorage getUnSkulledPlayer(EntityPlayer player) {
 		for(EntityPlayerItemStorage storage : owedPlayers) {
-			if(storage.player.getDisplayName().equals(player.getDisplayName())) {
+			if(storage.getPlayer().getDisplayName().equals(player.getDisplayName())) {
 				return storage;
 			}
 		}
