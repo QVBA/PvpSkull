@@ -4,7 +4,7 @@ Still in development.
 
 TODO:
 
-  Add proper saving over server restarts.
+  Add proper saving over server restarts. (Done, Commit https://github.com/QVBA/PvpSkull/commit/091dca1daeacb4e0e68abc69789024776e8bec9a)
   
   Add skull icon (or something similar) above skulled players heads.
   
