@@ -2,11 +2,10 @@ package com.github.QVBA.Commands;
 
 import java.util.List;
 
-import com.github.QVBA.EntityPlayerItemStorage;
-import com.github.QVBA.PlayerManager;
 import com.github.QVBA.Reference;
 import com.github.QVBA.Helpers.ChatHelper;
-import com.github.QVBA.Helpers.NBTHelper;
+import com.github.QVBA.NBT.NBTHelper;
+import com.github.QVBA.NBT.PlayerEntityProperties;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -16,12 +15,6 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 
 public class SaveItem extends Command{
-	
-	private PlayerManager manager;
-	
-	public SaveItem(PlayerManager manager) {
-		this.manager = manager;
-	}
 
 	@Override
 	public String getCommandName() {
@@ -58,16 +51,12 @@ public class SaveItem extends Command{
 		}
 		
 		//Requires additional work. (Note, even after update, this still requires work)
-		EntityPlayerItemStorage storage = manager.getUnSkulledPlayer(player);
-		if(manager.isPlayerSkulled(player)) {
+		PlayerEntityProperties props = PlayerEntityProperties.get(player);
+		if(props.isSkulled()) {
 			ChatHelper.sendChatMessage(sender, "You are skulled, you cannot protect items");
 			return;
 		}
-		if(storage == null) {
-			manager.addUnSkulledPlayer(new EntityPlayerItemStorage(player));
-			storage = manager.getUnSkulledPlayer(player); //Update reference if the player has just been added.
-		}
+		props.addSavedItem(heldItem);
 		NBTHelper.getModNbt(heldItem).setBoolean(NBTHelper.NBT_KEEPONDEATH, true);
-		storage.addItem(heldItem);
 	}
 }

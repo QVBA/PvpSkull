@@ -1,4 +1,4 @@
-package com.github.QVBA.Helpers;
+package com.github.QVBA.NBT;
 
 import javax.annotation.Nonnull;
 

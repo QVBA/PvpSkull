@@ -2,9 +2,8 @@ package com.github.QVBA.Commands;
 
 import java.util.List;
 
-import com.github.QVBA.EntityPlayerItemStorage;
-import com.github.QVBA.PlayerManager;
 import com.github.QVBA.Helpers.ChatHelper;
+import com.github.QVBA.NBT.PlayerEntityProperties;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,12 +11,6 @@ import net.minecraft.item.ItemStack;
 
 public class SavedItems extends Command{
 	
-	private PlayerManager manager;
-	
-	public SavedItems(PlayerManager manager) {
-		this.manager = manager;
-	}
-
 	@Override
 	public String getCommandName() {
 		return "saveditems";
@@ -42,23 +35,17 @@ public class SavedItems extends Command{
 		}
 		
 		EntityPlayer player = (EntityPlayer) sender;
-		
-		if(manager.isPlayerSkulled(player)) {
+		PlayerEntityProperties props = PlayerEntityProperties.get(player);
+		if(props.isSkulled()) {
 			ChatHelper.sendChatMessage(sender, "You are skulled, and therefore have no saved items");
 			return;
 		}
-		EntityPlayerItemStorage storage = manager.getUnSkulledPlayer(player);
-		if(storage != null && storage.getItems().size() > 0) {
-			int i = 1;
-			ChatHelper.sendChatMessage(sender, "Saved Items - ");
-			for(ItemStack stack : storage.getItems()) {
-				ChatHelper.sendChatMessage(sender, i + ": " + stack.getDisplayName());
-				i++;
+		ChatHelper.sendChatMessage(sender, "Saved Items - ");
+		for(int i = 0; i < props.getSavedItems().length; i++) {
+			if(props.getSavedItem(i) != null) {
+				ChatHelper.sendChatMessage(sender, i + ": " + props.getSavedItem(i).getDisplayName());
 			}
-			return;
-		}
-		
-		ChatHelper.sendChatMessage(sender, "You don't have any items saved.");
+		}	
 	}
 
 }

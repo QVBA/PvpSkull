@@ -16,21 +16,17 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 @Mod(name = Reference.MOD_NAME, modid = Reference.MOD_ID, version = Reference.MOD_VERSION)
 public class PvpSkull {
 
-	private PlayerManager manager;
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		
-		manager = new PlayerManager();
-		PlayerEvents events = new PlayerEvents(manager);
-		
+		PlayerEvents events = new PlayerEvents();
 		MinecraftForge.EVENT_BUS.register(events);
 		FMLCommonHandler.instance().bus().register(events);
 	}
 	
 	@EventHandler
 	public void serverLoad(FMLServerStartingEvent event) {
-		event.registerServerCommand(new SaveItem(manager));
-		event.registerServerCommand(new AmISkulled(manager));
-		event.registerServerCommand(new SavedItems(manager));
+		event.registerServerCommand(new SaveItem());
+		event.registerServerCommand(new AmISkulled());
+		event.registerServerCommand(new SavedItems());
 	}
 }

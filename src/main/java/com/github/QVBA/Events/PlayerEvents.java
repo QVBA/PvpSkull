@@ -3,11 +3,11 @@ package com.github.QVBA.Events;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import com.github.QVBA.EntityPlayerItemStorage;
 import com.github.QVBA.Reference;
-import com.github.QVBA.PlayerManager;
 import com.github.QVBA.Helpers.ChatHelper;
-import com.github.QVBA.Helpers.NBTHelper;
+import com.github.QVBA.NBT.NBTHelper;
+import com.github.QVBA.NBT.PlayerEntityProperties;
+import com.github.QVBA.Proxies.CommonProxy;
 
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -19,28 +19,39 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentText;
+import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
-
+import net.minecraftforge.event.entity.player.PlayerEvent;
+/** 
+ * Events used : 
+ * AttackEntityEvent
+ * PlayerDropsEvent
+ * PlayerRespawnEvent
+ * EntityConstructingEvent
+ * LivingDeathEvent
+ * EntityJoinWorldEvent
+ * @author QVBA/Roxox1
+ */
 public class PlayerEvents {
-	
-	private PlayerManager manager;
-	
-	public PlayerEvents(PlayerManager manager) {
-		this.manager = manager;
-	}
 	
 	@SubscribeEvent
 	public void onEvent(AttackEntityEvent event) {
 		if(event.entityPlayer.worldObj.isRemote) { //Return if this is clientside.
 			return;
 		}
-		Entity attacked = event.target;
-		EntityPlayer attacker = event.entityPlayer;
-		if(attacked instanceof EntityPlayer) {
-			if(!manager.isPlayerSkulled((EntityPlayer) attacked)) {
-				manager.skullPlayer(attacker);
+		Entity a = event.target;
+		if(a instanceof EntityPlayer) {
+			EntityPlayer attacker = event.entityPlayer;
+			EntityPlayer attacked = (EntityPlayer) a;
+			PlayerEntityProperties attackerProps = PlayerEntityProperties.get(attacker);
+			PlayerEntityProperties attackedProps = PlayerEntityProperties.get(attacked);
+			if(!attackedProps.isSkulled()) {
+				attackerProps.setSkulled(true);
 			}
 		}
 	}
@@ -50,17 +61,18 @@ public class PlayerEvents {
 			return;
 		}
 		EntityPlayer died = event.entityPlayer;
-		if(!manager.isPlayerSkulled(died)) {
-			EntityPlayerItemStorage storage = manager.getUnSkulledPlayer(died);
-			if(storage == null || !storage.hasItemsStored()) return; // The player doesn't have any owed items stored. 
-			
+		PlayerEntityProperties diedProps = PlayerEntityProperties.get(died);
+		if(!diedProps.isSkulled()) {
 			//Loop through the items in the players inventory and decide which ones to keep.
 			ArrayList<EntityItem> drops = new ArrayList<EntityItem>();
+			int i = 0;
 			for(EntityItem item : event.drops) {
 				ItemStack stack = item.getEntityItem();
 				if(stack != null && NBTHelper.isItemKeepOnDeath(stack)) {
-					if(storage.getItems().contains(stack)) {
+					if(diedProps.savedItemsContains(stack)) {
 						drops.add(item);
+						diedProps.setOwedItem(i, stack);
+						i++;
 					}else {
 						//We found an item that it marked to save, but is not the players. 
 						//This can happen in many ways, so we just handle it here and fix items being incorrectly saved.
@@ -81,7 +93,7 @@ public class PlayerEvents {
 			}
 			
 			//Tell the PlayerRespawnEvent event handler that it needs to give the player their saved items back.
-			manager.getUnSkulledPlayer(died).setOwedItems(true);
+			diedProps.setOwed(true);
 		}	
 	}
 	
@@ -91,16 +103,39 @@ public class PlayerEvents {
 			return;
 		}
 		EntityPlayer player = event.player;
-		EntityPlayerItemStorage storage = manager.getUnSkulledPlayer(player);
-		if(storage != null && storage.hasItemsStored() && storage.isOwedItems()) {
-			for(ItemStack stack : storage.getItems()) {
-				NBTHelper.getModNbt(stack).setBoolean(NBTHelper.NBT_KEEPONDEATH, false);
-				player.inventory.addItemStackToInventory(stack);
+		PlayerEntityProperties props = PlayerEntityProperties.get(player);
+		if(props.isOwed()) {
+			for(ItemStack stack : props.getOwedItems()) {
+				if(stack != null) {
+					NBTHelper.getModNbt(stack).setBoolean(NBTHelper.NBT_KEEPONDEATH, false);
+					player.inventory.addItemStackToInventory(stack);
+				}
 			}
 			
-			manager.getUnSkulledPlayer(player).setOwedItems(false);
-			manager.getUnSkulledPlayer(player).clearItems();
+			props.setOwed(false);
+			props.clearOwedItems();
 			ChatHelper.sendChatMessage(player, "Your items have been returned, and your saved items list has been cleared");
 		}
+	}
+	
+	@SubscribeEvent
+	public void onEvent(EntityConstructing event) {
+		if(!(event.entity instanceof EntityPlayer)) {
+			return; // If the entity is not a player, we don't want to add NBT Tags..
+		}
+		EntityPlayer player = (EntityPlayer) event.entity;
+		if(PlayerEntityProperties.get(player) == null) {
+			PlayerEntityProperties.register(player);
+		}
+		
+		if(player.getExtendedProperties(PlayerEntityProperties.EXT_PROP_NAME) == null) {
+			player.registerExtendedProperties(PlayerEntityProperties.EXT_PROP_NAME, new PlayerEntityProperties(player));
+		}
+	}	
+	
+
+	@SubscribeEvent
+	public void onEvent(PlayerEvent.Clone event) {
+		PlayerEntityProperties.get(event.entityPlayer).copy(PlayerEntityProperties.get(event.original));
 	}
 }
