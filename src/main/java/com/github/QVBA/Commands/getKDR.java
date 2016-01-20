@@ -34,6 +34,7 @@ public class getKDR extends Command{
 		EntityPlayer player = (EntityPlayer) sender;
 		PlayerEntityProperties props = PlayerEntityProperties.get(player);
 		ChatHelper.sendChatMessage(player, "K:" + props.getKills() + " D:" + props.getDeaths() + " R:" + (props.getDeaths() > 0 ? (double)props.getKills() / (double)props.getDeaths() : props.getKills()));
+		ChatHelper.sendChatMessage(player, "You are currently on a " + props.getCurrentKillstreak() + " killstreak. Your highest killstreak is " + props.getHighestKillstreak());
 	}
 
 }

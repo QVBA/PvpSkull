@@ -33,6 +33,8 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 	private final String KEY_OWED_ITEMS = "owedItems";
 	private final String KEY_TOTAL_KILLS = "totalKills";
 	private final String KEY_TOTAL_DEATHS = "totalDeaths";
+	private final String KEY_KILLSTREAK_CURRENT = "currentKillstreak";
+	private final String KEY_KILLSTREAK_HIGHEST = "highestKillstreak";
 	
 	//Values
 	private boolean isSkulled;
@@ -41,6 +43,8 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 	private ItemStack[] owedItems; //We don't want to give players back items on death that they didn't have in their inventory.
 	private int totalKills;
 	private int totalDeaths;
+	private int currentKillstreak;
+	private int highestKillstreak;
 	
 	public PlayerEntityProperties(EntityPlayer player) {
 		this.player = player;
@@ -50,6 +54,8 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 		this.owedItems = new ItemStack[3];
 		this.totalKills = 0;
 		this.totalDeaths = 0;
+		this.currentKillstreak = 0;
+		this.highestKillstreak = 0;
 	}
 	
 	public static final void register(EntityPlayer player) {
@@ -68,6 +74,7 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 		properties.setBoolean(KEY_IS_OWED, this.isOwed);
 		properties.setInteger(KEY_TOTAL_KILLS, this.totalKills);
 		properties.setInteger(KEY_TOTAL_DEATHS, this.totalDeaths);
+		properties.setInteger(KEY_KILLSTREAK_CURRENT, this.currentKillstreak);
 		NBTTagList list = new NBTTagList();
 		for(ItemStack stack : savedItems) {
 			if(stack != null) {
@@ -93,6 +100,8 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 		this.isOwed = properties.getBoolean(KEY_IS_OWED);
 		this.totalKills = properties.getInteger(KEY_TOTAL_KILLS);
 		this.totalDeaths = properties.getInteger(KEY_TOTAL_DEATHS);
+		this.currentKillstreak = properties.getInteger(KEY_KILLSTREAK_CURRENT);
+		this.highestKillstreak = properties.getInteger(KEY_KILLSTREAK_HIGHEST);
 		NBTTagList list = properties.getTagList(KEY_SAVED_ITEMS, Constants.NBT.TAG_LIST);
 		for(int i = 0; i < list.tagCount(); i++) {
 			this.savedItems[i] = ItemStack.loadItemStackFromNBT(list.getCompoundTagAt(i));
@@ -181,6 +190,10 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 		this.savedItems = p.savedItems;
 		this.totalDeaths = p.totalDeaths;
 		this.totalKills = p.totalKills;
+		this.highestKillstreak = p.highestKillstreak;
+		if(p.currentKillstreak > this.highestKillstreak) {
+			this.highestKillstreak = p.currentKillstreak;
+		}
 	}
 	
 	public int getKills() {
@@ -189,6 +202,8 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 	
 	public void addKill() {
 		this.totalKills++;
+		this.currentKillstreak++;
+		if(this.currentKillstreak > this.highestKillstreak) this.highestKillstreak = this.currentKillstreak;
 	}
 	
 	public void setKills(int amount) {
@@ -205,5 +220,13 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 	
 	public void setDeaths(int amount) {
 		this.totalDeaths = amount;
+	}
+	
+	public int getCurrentKillstreak() {
+		return this.currentKillstreak;
+	}
+	
+	public int getHighestKillstreak() {
+		return this.highestKillstreak;
 	}
 }
