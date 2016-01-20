@@ -51,14 +51,15 @@ public class PlayerEvents {
 		}
 		EntityPlayer died = event.entityPlayer;
 		if(!manager.isPlayerSkulled(died)) {
-			if(manager.getUnSkulledPlayer(died) == null) return; // The player doesn't have any owed items stored. 
+			EntityPlayerItemStorage storage = manager.getUnSkulledPlayer(died);
+			if(storage == null || !storage.hasItemsStored()) return; // The player doesn't have any owed items stored. 
 			
 			//Loop through the items in the players inventory and decide which ones to keep.
 			ArrayList<EntityItem> drops = new ArrayList<EntityItem>();
 			for(EntityItem item : event.drops) {
 				ItemStack stack = item.getEntityItem();
 				if(stack != null && NBTHelper.isItemKeepOnDeath(stack)) {
-					if(manager.getUnSkulledPlayer(died).getItems().contains(stack)) {
+					if(storage.getItems().contains(stack)) {
 						drops.add(item);
 					}else {
 						//We found an item that it marked to save, but is not the players. 
@@ -89,10 +90,9 @@ public class PlayerEvents {
 		if(event.player.worldObj.isRemote) { //Return if this is clientside.
 			return;
 		}
-		System.out.println("FIRED!");
 		EntityPlayer player = event.player;
 		EntityPlayerItemStorage storage = manager.getUnSkulledPlayer(player);
-		if(storage != null) {
+		if(storage != null && storage.hasItemsStored() && storage.isOwedItems()) {
 			for(ItemStack stack : storage.getItems()) {
 				NBTHelper.getModNbt(stack).setBoolean(NBTHelper.NBT_KEEPONDEATH, false);
 				player.inventory.addItemStackToInventory(stack);

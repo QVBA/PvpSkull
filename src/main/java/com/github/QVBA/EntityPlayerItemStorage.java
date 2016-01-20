@@ -66,5 +66,9 @@ public class EntityPlayerItemStorage {
 	public void clearItems(){
 		items.clear();
 	}
+	
+	public boolean hasItemsStored() {
+		return this.items.size() > 0;
+	}
 
 }

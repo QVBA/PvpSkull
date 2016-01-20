@@ -53,6 +53,7 @@ public class SavedItems extends Command{
 			ChatHelper.sendChatMessage(sender, "Saved Items - ");
 			for(ItemStack stack : storage.getItems()) {
 				ChatHelper.sendChatMessage(sender, i + ": " + stack.getDisplayName());
+				i++;
 			}
 			return;
 		}

@@ -29,7 +29,7 @@ public class PvpSkull {
 	
 	@EventHandler
 	public void serverLoad(FMLServerStartingEvent event) {
-		event.registerServerCommand(new SaveItem());
+		event.registerServerCommand(new SaveItem(manager));
 		event.registerServerCommand(new AmISkulled(manager));
 		event.registerServerCommand(new SavedItems(manager));
 	}
