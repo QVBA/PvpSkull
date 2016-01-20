@@ -103,5 +103,4 @@ public class PlayerEvents {
 			ChatHelper.sendChatMessage(player, "Your items have been returned, and your saved items list has been cleared");
 		}
 	}
-
 }

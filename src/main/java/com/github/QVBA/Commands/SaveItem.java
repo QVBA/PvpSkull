@@ -59,6 +59,9 @@ public class SaveItem extends Command{
 		
 		//Requires additional work. (Note, even after update, this still requires work)
 		EntityPlayerItemStorage storage = manager.getUnSkulledPlayer(player);
+		if(manager.isPlayerSkulled(player)) {
+			ChatHelper.sendChatMessage(sender, "You are skulled, you cannot protect items");
+		}
 		if(storage == null) {
 			manager.addUnSkulledPlayer(new EntityPlayerItemStorage(player));
 			storage = manager.getUnSkulledPlayer(player); //Update reference if the player has just been added.
