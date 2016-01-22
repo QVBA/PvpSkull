@@ -10,6 +10,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IExtendedEntityProperties;
 import net.minecraftforge.common.MinecraftForge;
@@ -113,10 +115,7 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 	}
 
 	@Override
-	public void init(Entity entity, World world) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void init(Entity entity, World world) {}
 	
 	public void setSkulled(boolean skulled) {
 		this.isSkulled = skulled;
@@ -229,4 +228,5 @@ public class PlayerEntityProperties implements IExtendedEntityProperties
 	public int getHighestKillstreak() {
 		return this.highestKillstreak;
 	}
+	
 }

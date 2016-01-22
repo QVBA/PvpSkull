@@ -3,11 +3,13 @@ package com.github.QVBA.Events;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import com.github.QVBA.PvpSkull;
 import com.github.QVBA.Reference;
 import com.github.QVBA.Helpers.ChatHelper;
 import com.github.QVBA.Helpers.UtilityHelper;
 import com.github.QVBA.NBT.NBTHelper;
 import com.github.QVBA.NBT.PlayerEntityProperties;
+import com.github.QVBA.Networking.Packet;
 
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -15,12 +17,16 @@ import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.RenderEntity;
+import net.minecraft.client.renderer.entity.RendererLivingEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentText;
+import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -128,5 +134,12 @@ public class PlayerEvents {
 		if(!(event.source.getEntity() instanceof EntityPlayer)) return;
 		PlayerEntityProperties.get((EntityPlayer) event.source.getEntity()).addKill();
 		PlayerEntityProperties.get((EntityPlayer) event.entityLiving).addDeath();
+		PlayerEntityProperties.get((EntityPlayer) event.entityLiving).setSkulled(false); //Player loses their skull if killed by another player.
 	}
+	
+	@SubscribeEvent
+	public void onEvent(PlayerEvent.StartTracking event) {
+		PvpSkull.networkManager.sendToAllAround(new Packet(event.entityPlayer), event.entityPlayer);
+	}
+	
 }
